@@ -39,8 +39,8 @@ func Start() {
 	//Cart
 	router.HandleFunc("/cart/create_ref_id/", cart.CreateRefId).Methods("POST")
 	router.HandleFunc("/cart/get_cart/{ref_id}/", cart.Getcart).Methods("GET")
-	router.HandleFunc("/addtocart/", cart.AddtoCart).Methods("POST")
-	router.HandleFunc("/additemstocart/", cart.AddItemstoCart).Methods("POST")
+	router.HandleFunc("/addtocart", cart.AddtoCart).Methods("POST")
+	router.HandleFunc("/additemstocart", cart.AddItemstoCart).Methods("POST")
 	router.HandleFunc("/deletecart/", cart.DeleteCart).Methods("DELETE")
 
 	// serve the app
