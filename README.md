@@ -92,7 +92,7 @@ Quantity   (int)
 
 ### InsertInventory
 
-Inserts iventory details into the database : POST\
+Inserts inventory details into the database : POST\
 /insertinventory/
 
 ### GetInventory
@@ -126,12 +126,12 @@ Creating a unique user reference id using UUID and inserting it to the cart refe
 ### AddItemtoCart
 
 Add new item to the cart or increases the existing quantity : POST\
-/addtocart/
+/addtocart
 
 ### AddItemstoCart
 
 Add multiple items to the cart or increases the existing quantity : POST\
-/additemstocart/
+/additemstocart
 
 ### GetCart
 
