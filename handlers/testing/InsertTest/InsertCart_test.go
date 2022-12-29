@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -11,10 +10,10 @@ import (
 )
 
 func TestInsertCart(t *testing.T) {
-	data := []byte(`{"reference_id":"585f2ef9-ddc1-435e-9d69-0ed12dc9ae29", "product_id":123, "quantity":2}`)
+	//data := []byte(`{"reference_id":"585f2ef9-ddc1-435e-9d69-0ed12dc9ae29", "product_id":123, "quantity":2}`)
 
 	// Make a request to the API endpoint that triggers the insert function
-	resp, err := http.Post("http://localhost:7171/addtocart/", "application/json", bytes.NewBuffer(data))
+	resp, err := http.Post("http://localhost:7171/addtocart?ref=585f2ef9-ddc1-435e-9d69-0ed12dc9ae29&product_id=119&quantity=1", "application/json", nil)
 	if err != nil {
 		t.Errorf("Error making request: %v", err)
 	}
@@ -42,9 +41,9 @@ func TestInsertCart(t *testing.T) {
 
 // reference_id missing
 func TestInsertRefNotValid(t *testing.T) {
-	data := []byte(`{"product_id":111, "quantity":2}`)
+	//data := []byte(`{"product_id":111, "quantity":2}`)
 
-	resp, err := http.Post("http://localhost:7171/addtocart/", "application/json", bytes.NewBuffer(data))
+	resp, err := http.Post("http://localhost:7171/addtocart?product_id=111&quantity=2", "application/json", nil)
 	if err != nil {
 		t.Errorf("Error making request: %v", err)
 	}
@@ -70,9 +69,9 @@ func TestInsertRefNotValid(t *testing.T) {
 
 // Insufficient or no stock
 func TestInsertNotCart(t *testing.T) {
-	data := []byte(`{"reference_id":"1f45bb50-3f65-423d-b9c9-8daf85b29e3b", "product_id":116, "quantity":4}`)
+	//	data := []byte(`{"reference_id":"1f45bb50-3f65-423d-b9c9-8daf85b29e3b", "product_id":116, "quantity":4}`)
 
-	resp, err := http.Post("http://localhost:7171/addtocart/", "application/json", bytes.NewBuffer(data))
+	resp, err := http.Post("http://localhost:7171/addtocart?ref=1f45bb50-3f65-423d-b9c9-8daf85b29e3b&product_id=124&quantity=4", "application/json", nil)
 	if err != nil {
 		t.Errorf("Error making request: %v", err)
 	}
