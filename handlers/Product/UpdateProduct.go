@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -17,14 +16,25 @@ func UpdateProduct(w http.ResponseWriter, r *http.Request) {
 
 	err := json.Unmarshal(reqBody, &product)
 	if err != nil {
-		fmt.Println(err)
+		helpers.CheckErr(err)
+		helpers.SendErrResponse(helpers.Error, helpers.Unmarshalling, w)
+		helpers.LogError(err)
+		return
 	}
+
 	var response = typedefs.Json_Response{}
 
 	db := helpers.SetupDB()
 
-	rows, err := db.Query("SELECT * FROM product_master where product_id=$1", product.Product_id)
+	rows, err := db.Query(helpers.GetProductAll, product.Product_id)
 	defer rows.Close()
+
+	if err != nil {
+		helpers.CheckErr(err)
+		helpers.SendErrResponse(helpers.Error, helpers.Query, w)
+		helpers.LogError(err)
+		return
+	}
 
 	result := typedefs.Product_Master{}
 
@@ -60,17 +70,25 @@ func UpdateProduct(w http.ResponseWriter, r *http.Request) {
 		product.Price = result.Price
 	}
 
-	a, err := db.Exec("UPDATE product_master SET Name=$1, Specification=$3, sku=$4, category_id=$5, price=$6 WHERE Product_id=$2;", product.Name, product.Product_id, string(jsonStr), product.Sku, product.Category_id, product.Price)
-	// check errors
-	helpers.CheckErr(err)
+	a, err := db.Exec(helpers.UpdateProduct, product.Name, product.Product_id, string(jsonStr), product.Sku, product.Category_id, product.Price)
+
+	if err != nil {
+		helpers.CheckErr(err)
+		helpers.SendErrResponse(helpers.Error, helpers.Query, w)
+		helpers.LogError(err)
+		return
+	}
 
 	b, err := a.RowsAffected()
+	if err != nil {
+		helpers.CheckErr(err)
+		helpers.LogError(err)
+	}
 
 	if b != 1 {
-		response = typedefs.Json_Response{Type: "missing", Message: "product id doesn't exists!"}
+		response = typedefs.Json_Response{Type: helpers.Missing, Message: helpers.Idnotexits}
 	} else {
-		fmt.Println("Updating DB")
-		response = typedefs.Json_Response{Type: "success", Message: "database has been updated successfully!"}
+		response = typedefs.Json_Response{Type: helpers.Success, Message: helpers.UpdateSuccess}
 
 	}
 

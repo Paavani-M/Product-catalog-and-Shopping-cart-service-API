@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -15,21 +14,52 @@ func InsertInventory(w http.ResponseWriter, r *http.Request) {
 	post := typedefs.Inventory{}
 
 	err := json.Unmarshal(reqBody, &post)
+
 	if err != nil {
-		fmt.Println(err)
+		helpers.CheckErr(err)
+		helpers.SendErrResponse(helpers.Error, helpers.Unmarshalling, w)
+		helpers.LogError(err)
+		return
+	}
+
+	if post.Product_id <= 0 || post.Quantity <= 0 {
+		helpers.SendErrResponse(helpers.Error, helpers.ValidInput, w)
+		return
 	}
 
 	var response = typedefs.Json_Response{}
 
 	db := helpers.SetupDB()
 
-	fmt.Println("Inserting...")
+	result, err := db.Exec(helpers.InsertUpdateInventory, post.Product_id)
+	if err != nil {
+		helpers.CheckErr(err)
+		helpers.SendErrResponse(helpers.Error, helpers.Query, w)
+		helpers.LogError(err)
+		return
+	}
 
-	_, err = db.Exec("INSERT INTO inventory(product_id,quantity) VALUES($1,$2);", post.Product_id, post.Quantity)
-	helpers.CheckErr(err)
+	rows, err := result.RowsAffected()
+	if err != nil {
+		helpers.CheckErr(err)
+		helpers.LogError(err)
+	}
 
-	response = typedefs.Json_Response{Type: "success", Message: "Record has been inserted successfully!"}
-	fmt.Println("Your data has been inserted successfuly")
+	if rows == 1 {
+		response = typedefs.Json_Response{Type: helpers.Update, Message: helpers.InsertUpdateInven}
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
+	_, err = db.Exec(helpers.InsertInventory, post.Product_id, post.Quantity)
+	if err != nil {
+		helpers.CheckErr(err)
+		helpers.SendErrResponse(helpers.Error, helpers.Query, w)
+		helpers.LogError(err)
+		return
+	}
+
+	response = typedefs.Json_Response{Type: helpers.Success, Message: helpers.InsertSuccess}
 
 	json.NewEncoder(w).Encode(response)
 

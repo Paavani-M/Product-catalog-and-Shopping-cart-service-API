@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -12,18 +11,21 @@ import (
 )
 
 func CreateRefId(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("inside creating reference id for user function")
 	var response = typedefs.Json_Response{}
 
 	id := uuid.New()
 	db := helpers.SetupDB()
 	currentdate := time.Now()
 
-	_, err := db.Exec("INSERT INTO cart_reference(reference_id,created_at) VALUES($1,$2);", id.String(), currentdate)
-	helpers.CheckErr(err)
+	_, err := db.Exec(helpers.CreateRefId, id.String(), currentdate)
+	if err != nil {
+		helpers.CheckErr(err)
+		helpers.SendErrResponse(helpers.Error, helpers.Query, w)
+		helpers.LogError(err)
+		return
+	}
 
-	response = typedefs.Json_Response{Type: "success", Message: "Record has been inserted successfully!"}
-	fmt.Println("Your data has been inserted successfuly")
+	response = typedefs.Json_Response{Type: helpers.Success, Message: helpers.InsertSuccess}
 
 	json.NewEncoder(w).Encode(response)
 

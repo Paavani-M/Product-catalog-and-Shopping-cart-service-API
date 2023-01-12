@@ -6,62 +6,73 @@ import (
 	"net/http"
 	"testing"
 
+	"task.com/helpers"
 	"task.com/typedefs"
 )
 
 func TestInsertCart(t *testing.T) {
 
-	// Make a request to the API endpoint that triggers the insert function
-	resp, err := http.Post("http://localhost:7171/addtocart?ref=585f2ef9-ddc1-435e-9d69-0ed12dc9ae29&product_id=119&quantity=1", "application/json", nil)
+	resp, err := http.Post("http://localhost:7172/addtocart?ref=585f2ef9-ddc1-435e-9d69-0ed12dc9ae29&product_id=6&quantity=1", "application/json", nil)
 	if err != nil {
 		t.Errorf("Error making request: %v", err)
+		helpers.LogError(err)
 	}
 
-	// Read the response from the API
 	body, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
 		t.Errorf("Error reading response body: %v", err)
+		helpers.LogError(err)
 	}
 
 	response := typedefs.Json_Response{}
 	err = json.Unmarshal(body, &response)
 
-	// Make assertions about the output of the function
+	if err != nil {
+		t.Errorf("Error reading response body: %v", err)
+		helpers.LogError(err)
+	}
+
 	if resp.StatusCode != 200 {
 		t.Errorf("Expected status code 200, got %d", resp.StatusCode)
 	}
 
-	if response.Type != "success" || response.Message != "Added to cart!" {
-		t.Errorf("Expected response body 'success added to cart!', got '%s %s'", response.Type, response.Message)
+	if response.Type != "Success" || response.Message != "Added to Cart!" {
+		t.Errorf("Expected response body 'Success Added to Cart!', got '%s %s'", response.Type, response.Message)
 	}
 
 }
 
 // reference_id missing
 func TestInsertRefNotValid(t *testing.T) {
-	//data := []byte(`{"product_id":111, "quantity":2}`)
 
-	resp, err := http.Post("http://localhost:7171/addtocart?product_id=111&quantity=2", "application/json", nil)
+	resp, err := http.Post("http://localhost:7172/addtocart?product_id=111&quantity=2", "application/json", nil)
 	if err != nil {
 		t.Errorf("Error making request: %v", err)
+		helpers.LogError(err)
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
 		t.Errorf("Error reading response body: %v", err)
+		helpers.LogError(err)
 	}
 
 	response := typedefs.Json_Response{}
 	err = json.Unmarshal(body, &response)
 
+	if err != nil {
+		t.Errorf("Error reading response body: %v", err)
+		helpers.LogError(err)
+	}
+
 	if resp.StatusCode != 200 {
 		t.Errorf("Expected status code 200, got %d", resp.StatusCode)
 	}
 
-	if response.Type != "missing" || response.Message != "reference id has not passed" {
-		t.Errorf("Expected response body 'invalid Invalid reference id has been passed', got '%s %s'", response.Type, response.Message)
+	if response.Type != "Missing" || response.Message != "Reference ID not passed" {
+		t.Errorf("Expected response body 'Reference ID not passed', got '%s %s'", response.Type, response.Message)
 	}
 
 }
@@ -69,19 +80,26 @@ func TestInsertRefNotValid(t *testing.T) {
 // Insufficient or no stock
 func TestInsertNotCart(t *testing.T) {
 
-	resp, err := http.Post("http://localhost:7171/addtocart?ref=1f45bb50-3f65-423d-b9c9-8daf85b29e3b&product_id=124&quantity=4", "application/json", nil)
+	resp, err := http.Post("http://localhost:7172/addtocart?ref=1f45bb50-3f65-423d-b9c9-8daf85b29e3b&product_id=2&quantity=4", "application/json", nil)
 	if err != nil {
 		t.Errorf("Error making request: %v", err)
+		helpers.LogError(err)
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
 		t.Errorf("Error reading response body: %v", err)
+		helpers.LogError(err)
 	}
 
 	response := typedefs.Json_Response{}
 	err = json.Unmarshal(body, &response)
+
+	if err != nil {
+		t.Errorf("Error reading response body: %v", err)
+		helpers.LogError(err)
+	}
 
 	if resp.StatusCode != 200 {
 		t.Errorf("Expected status code 200, got %d", resp.StatusCode)

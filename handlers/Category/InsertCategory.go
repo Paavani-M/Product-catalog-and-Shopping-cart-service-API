@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -16,22 +15,30 @@ func InsertCategory(w http.ResponseWriter, r *http.Request) {
 
 	err := json.Unmarshal(reqBody, &category)
 	if err != nil {
-		fmt.Println(err)
+		helpers.CheckErr(err)
+		helpers.SendErrResponse(helpers.Error, helpers.Unmarshalling, w)
+		helpers.LogError(err)
+		return
+	}
+
+	if category.Category_id <= 0 {
+		helpers.SendErrResponse(helpers.Error, helpers.ValidInput, w)
+		return
 	}
 
 	var response = typedefs.Json_Response{}
 
 	db := helpers.SetupDB()
 
-	fmt.Println("Inserting details into DB")
+	_, err = db.Exec(helpers.InsertCategory, category.Category_id, category.Name)
+	if err != nil {
+		helpers.CheckErr(err)
+		helpers.SendErrResponse(helpers.Error, helpers.Query, w)
+		helpers.LogError(err)
+		return
+	}
 
-	fmt.Println("Inserting category of name:  " + category.Name)
-
-	_, err = db.Exec("INSERT INTO category_master(category_id,name) VALUES($1,$2);", category.Category_id, category.Name)
-	helpers.CheckErr(err)
-
-	response = typedefs.Json_Response{Type: "success", Message: "Record has been inserted successfully!"}
-	fmt.Println("Your data has been inserted successfuly")
+	response = typedefs.Json_Response{Type: helpers.Success, Message: helpers.InsertSuccess}
 
 	json.NewEncoder(w).Encode(response)
 

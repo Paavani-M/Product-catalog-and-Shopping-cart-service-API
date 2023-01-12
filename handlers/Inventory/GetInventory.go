@@ -2,8 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
 	"net/http"
 
 	"task.com/helpers"
@@ -13,14 +11,14 @@ import (
 func GetInventory(w http.ResponseWriter, r *http.Request) {
 	db := helpers.SetupDB()
 
-	fmt.Println("Getting inventory db")
-	rows, err := db.Query("SELECT * FROM inventory")
+	rows, err := db.Query(helpers.GetInventory)
 	defer rows.Close()
-	// check errors
-	helpers.CheckErr(err)
 
 	if err != nil {
-		log.Fatal(err)
+		helpers.CheckErr(err)
+		helpers.SendErrResponse(helpers.Error, helpers.Query, w)
+		helpers.LogError(err)
+		return
 	}
 
 	inventory_result := []typedefs.Inventory{}
@@ -30,7 +28,8 @@ func GetInventory(w http.ResponseWriter, r *http.Request) {
 		err = rows.Scan(&newInventory.Product_id, &newInventory.Quantity)
 
 		if err != nil {
-			fmt.Println(err)
+			helpers.CheckErr(err)
+			helpers.LogError(err)
 		}
 
 		inventory_result = append(inventory_result, newInventory)

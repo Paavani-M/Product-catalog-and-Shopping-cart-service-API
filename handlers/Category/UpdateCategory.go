@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -17,26 +16,40 @@ func UpdateCategory(w http.ResponseWriter, r *http.Request) {
 
 	err := json.Unmarshal(reqBody, &category)
 	if err != nil {
-		fmt.Println(err)
+		helpers.CheckErr(err)
+		helpers.SendErrResponse(helpers.Error, helpers.Unmarshalling, w)
+		helpers.LogError(err)
+		return
+	}
+
+	if category.Category_id <= 0 {
+		helpers.SendErrResponse(helpers.Error, helpers.ValidInput, w)
+		return
 	}
 
 	var response = typedefs.Json_Response{}
 
 	db := helpers.SetupDB()
 
-	result, err := db.Exec("UPDATE category_master SET Name=$1 WHERE Category_Id=$2;", category.Name, category.Category_id)
+	result, err := db.Exec(helpers.UpdateCategory, category.Name, category.Category_id)
 
-	// check errors
-	helpers.CheckErr(err)
+	if err != nil {
+		helpers.CheckErr(err)
+		helpers.SendErrResponse(helpers.Error, helpers.Query, w)
+		helpers.LogError(err)
+		return
+	}
 
 	rows, err := result.RowsAffected()
+	if err != nil {
+		helpers.CheckErr(err)
+		helpers.LogError(err)
+	}
 
 	if rows != 1 {
-		response = typedefs.Json_Response{Type: "missing", Message: "Category id doesn't exist"}
+		response = typedefs.Json_Response{Type: helpers.Missing, Message: helpers.Idnotexits}
 	} else {
-		fmt.Println("Updating DB")
-		fmt.Println("Updating category id:", category.Category_id)
-		response = typedefs.Json_Response{Type: "success", Message: "database has been updated successfully!"}
+		response = typedefs.Json_Response{Type: helpers.Success, Message: helpers.UpdateSuccess}
 	}
 
 	json.NewEncoder(w).Encode(response)

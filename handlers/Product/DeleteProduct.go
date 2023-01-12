@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	"task.com/helpers"
@@ -12,25 +12,38 @@ import (
 
 func DeleteProduct(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	fmt.Println("inside delete product function")
+
 	Id := params["id"]
+
+	a, _ := strconv.Atoi(Id)
+
+	if a <= 0 {
+		helpers.SendErrResponse(helpers.Error, helpers.ValidInput, w)
+		return
+	}
 
 	var response = typedefs.Json_Response{}
 
 	db := helpers.SetupDB()
-	result, err := db.Exec("DELETE FROM product_master where product_id = $1", Id)
+	result, err := db.Exec(helpers.DeleteProduct, Id)
 
-	helpers.CheckErr(err)
+	if err != nil {
+		helpers.CheckErr(err)
+		helpers.LogError(err)
+		return
+	}
 
 	rows, err := result.RowsAffected()
 
-	helpers.CheckErr(err)
+	if err != nil {
+		helpers.CheckErr(err)
+		helpers.LogError(err)
+	}
 
 	if rows != 1 {
-		response = typedefs.Json_Response{Type: "missing", Message: "Product id doesn't exist"}
+		response = typedefs.Json_Response{Type: helpers.Missing, Message: helpers.Idnotexits}
 	} else {
-		fmt.Println("Deleting a product from DB")
-		response = typedefs.Json_Response{Type: "success", Message: "Product has been deleted successfully!"}
+		response = typedefs.Json_Response{Type: helpers.Success, Message: helpers.DeleteSuccess}
 	}
 
 	json.NewEncoder(w).Encode(response)

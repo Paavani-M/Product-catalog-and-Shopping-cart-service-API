@@ -4,30 +4,34 @@ import (
 	"io"
 	"net/http"
 	"testing"
+
+	"task.com/helpers"
 )
 
 func TestDeleteCategoryNotExists(t *testing.T) {
-	req, err := http.NewRequest("DELETE", "http://localhost:7171/deletecategory/22/", nil)
+	req, err := http.NewRequest("DELETE", "http://localhost:7172/deletecategory/222/", nil)
 	if err != nil {
 		t.Fatal(err)
+		helpers.LogError(err)
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Fatal(err)
+		helpers.LogError(err)
 	}
 	defer resp.Body.Close()
 
-	// Check the status code of the response
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("unexpected status code: got %d, want %d", resp.StatusCode, http.StatusOK)
 	}
 
-	// Check the response body, if necessary
-	// ...
-
-	expected := "{\"type\":\"missing\",\"message\":\"Category id doesn't exist\"}\n"
+	expected := "{\"type\":\"Missing\",\"message\":\"Id doesn't exists!\"}\n"
 
 	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatal(err)
+		helpers.LogError(err)
+	}
 
 	if string(bodyBytes) != expected {
 		t.Errorf("unexpected: got %s, want %s", string(bodyBytes), expected)
@@ -36,27 +40,29 @@ func TestDeleteCategoryNotExists(t *testing.T) {
 }
 
 func TestDeleteCategoryExists(t *testing.T) {
-	req, err := http.NewRequest("DELETE", "http://localhost:7171/deletecategory/1/", nil)
+	req, err := http.NewRequest("DELETE", "http://localhost:7172/deletecategory/8/", nil)
 	if err != nil {
 		t.Fatal(err)
+		helpers.LogError(err)
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Fatal(err)
+		helpers.LogError(err)
 	}
 	defer resp.Body.Close()
 
-	// Check the status code of the response
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("unexpected status code: got %d, want %d", resp.StatusCode, http.StatusOK)
 	}
 
-	// Check the response body, if necessary
-	// ...
-
-	expected := "{\"type\":\"success\",\"message\":\"Category type has been deleted successfully!\"}\n"
+	expected := "{\"type\":\"Success\",\"message\":\"Deleted successfully!\"}\n"
 
 	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatal(err)
+		helpers.LogError(err)
+	}
 
 	if string(bodyBytes) != expected {
 		t.Errorf("unexpected: got %s, want %s", string(bodyBytes), expected)

@@ -2,8 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
 	"net/http"
 
 	"task.com/helpers"
@@ -13,17 +11,16 @@ import (
 func GetCatgory(w http.ResponseWriter, r *http.Request) {
 	db := helpers.SetupDB()
 
-	fmt.Println("inside getcategory function")
-	rows, err := db.Query("SELECT * FROM category_master")
-
-	defer rows.Close()
-
-	// check errors
-	helpers.CheckErr(err)
+	rows, err := db.Query(helpers.GetCatgory)
 
 	if err != nil {
-		log.Fatal(err)
+		helpers.CheckErr(err)
+		helpers.SendErrResponse(helpers.Error, helpers.Query, w)
+		helpers.LogError(err)
+		return
 	}
+
+	defer rows.Close()
 
 	categories := []typedefs.Category_Master{}
 	for rows.Next() {
@@ -32,7 +29,8 @@ func GetCatgory(w http.ResponseWriter, r *http.Request) {
 		err = rows.Scan(&newCategory.Category_id, &newCategory.Name)
 
 		if err != nil {
-			fmt.Println(err)
+			helpers.CheckErr(err)
+			helpers.LogError(err)
 		}
 
 		categories = append(categories, newCategory)

@@ -2,35 +2,46 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
 	"math"
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
 	"task.com/helpers"
 	"task.com/typedefs"
 )
 
 func GetProducts(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	fmt.Println("inside getproducts function")
-	pageno := params["pageno"]
+	pageno := r.URL.Query().Get("page")
+	noofitems := r.URL.Query().Get("items_per_page")
 
 	a, _ := strconv.Atoi(pageno)
-	limit_start := (a - 1) * 20
+	b, _ := strconv.Atoi(noofitems)
+
+	var ls int
+	if a <= 0 && b <= 0 {
+		ls = GetProductsNo(1, 20)
+		b = 20
+	} else if a >= 0 && b <= 0 {
+		ls = GetProductsNo(a, 20)
+		b = 20
+	} else if a <= 0 && b >= 0 {
+		ls = GetProductsNo(1, b)
+	} else {
+		ls = GetProductsNo(a, b)
+	}
+
+	limit_start := ls
 
 	db := helpers.SetupDB()
 
-	fmt.Println("Getting products with minimum details...")
-	rows, err := db.Query("SELECT product_id,name,specification FROM product_master")
+	rows, err := db.Query(helpers.GetProducts)
 	defer rows.Close()
-	// check errors
-	helpers.CheckErr(err)
 
 	if err != nil {
-		log.Fatal(err)
+		helpers.CheckErr(err)
+		helpers.SendErrResponse(helpers.Error, helpers.Query, w)
+		helpers.LogError(err)
+		return
 	}
 
 	products := []typedefs.Product_Master{}
@@ -42,7 +53,8 @@ func GetProducts(w http.ResponseWriter, r *http.Request) {
 		json.Unmarshal(spec, &newProduct.Specification)
 
 		if err != nil {
-			fmt.Println(err)
+			helpers.CheckErr(err)
+			helpers.LogError(err)
 		}
 
 		products = append(products, newProduct)
@@ -58,14 +70,20 @@ func GetProducts(w http.ResponseWriter, r *http.Request) {
 		}
 		response = append(response, newProduct)
 	}
-	limit_end := int(math.Min(float64(limit_start+20), float64(len(response))))
+	limit_end := int(math.Min(float64(limit_start+b), float64(len(response))))
 
 	if limit_start <= len(response)-1 {
 		w.Header().Add("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(response[limit_start:limit_end])
 	} else {
 		w.Header().Add("Content-Type", "application/json")
-		json.NewEncoder(w).Encode("Doesn't have products to display")
+		json.NewEncoder(w).Encode(helpers.A)
 	}
 
+}
+
+func GetProductsNo(pn int, lpp int) int {
+	limit_start := (pn - 1) * lpp
+
+	return limit_start
 }

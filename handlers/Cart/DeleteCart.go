@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -16,27 +15,34 @@ func DeleteCart(w http.ResponseWriter, r *http.Request) {
 
 	err := json.Unmarshal(reqBody, &delete)
 	if err != nil {
-		fmt.Println(err)
+		helpers.CheckErr(err)
+		helpers.SendErrResponse(helpers.Error, helpers.Unmarshalling, w)
+		helpers.LogError(err)
+		return
 	}
 
 	var response = typedefs.Json_Response{}
 
 	db := helpers.SetupDB()
 
-	fmt.Println("Deleting from cart....")
+	result, err := db.Exec(helpers.DeleteCart, delete.Reference_Id, delete.Product_Id)
 
-	result, err := db.Exec("DELETE FROM cart_items where reference_id=$1 and product_id = $2", delete.Reference_Id, delete.Product_Id)
-
-	helpers.CheckErr(err)
+	if err != nil {
+		helpers.CheckErr(err)
+		helpers.LogError(err)
+	}
 
 	rows, err := result.RowsAffected()
 
-	helpers.CheckErr(err)
+	if err != nil {
+		helpers.CheckErr(err)
+		helpers.LogError(err)
+	}
 
 	if rows != 1 {
-		response = typedefs.Json_Response{Type: "missing", Message: "product id or reference_id doesn't exists"}
+		response = typedefs.Json_Response{Type: helpers.Missing, Message: helpers.CartIdnotexists}
 	} else {
-		response = typedefs.Json_Response{Type: "success", Message: "Deleted successfully!"}
+		response = typedefs.Json_Response{Type: helpers.Success, Message: helpers.DeleteSuccess}
 	}
 	json.NewEncoder(w).Encode(response)
 
