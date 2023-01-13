@@ -49,8 +49,12 @@ func Getcart(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Add("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(list_of_cart)
-	json.NewEncoder(w).Encode("Total cart value:")
-	json.NewEncoder(w).Encode(total)
+
+	Cart := map[string]interface{}{
+		"Cart Items":  list_of_cart,
+		"Total Price": total,
+	}
+
+	json.NewEncoder(w).Encode(Cart)
 
 }
