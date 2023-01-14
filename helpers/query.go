@@ -23,7 +23,7 @@ var DeleteCategory string = "DELETE FROM category_master where category_id = $1"
 
 //cart
 var CreateRefId string = "INSERT INTO cart_reference(reference_id,created_at) VALUES($1,$2);"
-var Get_Cart string = "SELECT cart_items.reference_id,cart_items.product_id,product_master.name,product_master.price,cart_items.quantity FROM (cart_items JOIN product_master ON cart_items.product_id = product_master.product_id) WHERE cart_items.reference_id=$1"
+var Get_Cart string = "SELECT cart_items.product_id,product_master.name,product_master.price,cart_items.quantity FROM (cart_items JOIN product_master ON cart_items.product_id = product_master.product_id) WHERE cart_items.reference_id=$1"
 var DeleteCart string = "DELETE FROM cart_items where reference_id=$1 and product_id = $2"
 var InsertCart string = "INSERT INTO cart_items(reference_id,product_id,quantity) VALUES($1,$2,$3);"
 

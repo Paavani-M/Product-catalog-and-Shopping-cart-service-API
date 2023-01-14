@@ -30,7 +30,7 @@ func Getcart(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		new_cart := typedefs.Get_Cart{}
 
-		err := rows.Scan(&new_cart.Reference_id, &new_cart.Product_Id, &new_cart.Product_Name, &new_cart.Price, &new_cart.Quantity)
+		err := rows.Scan(&new_cart.Product_Id, &new_cart.Product_Name, &new_cart.Price, &new_cart.Quantity)
 
 		if err != nil {
 			helpers.CheckErr(err)
