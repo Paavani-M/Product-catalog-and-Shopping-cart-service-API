@@ -114,9 +114,21 @@ func GetInventoryCI() {
 		inventory_result = append(inventory_result, newInventory)
 	}
 
+	response := []map[string]any{}
+
+	for _, v := range inventory_result {
+		newInventory := map[string]any{
+			"Product Id": v.Product_id,
+			"Quantity":   v.Quantity,
+		}
+		response = append(response, newInventory)
+	}
+
 	var divider = "-----------------"
-	for m1, m := range inventory_result {
-		fmt.Println(m1, m)
+	for _, m := range response {
+		for k, v := range m {
+			fmt.Println(k, ":", v)
+		}
 		fmt.Println(divider)
 	}
 

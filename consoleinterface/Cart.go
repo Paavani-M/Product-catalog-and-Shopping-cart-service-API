@@ -163,11 +163,23 @@ func GetCartCI() {
 		return
 	}
 
+	response := []map[string]any{}
+
+	for _, v := range list_of_cart {
+		newCart := map[string]any{
+			"Product Id": v.Product_Id,
+			"Name":       v.Product_Name,
+			"Price":      v.Price,
+			"Quantity":   v.Quantity,
+		}
+		response = append(response, newCart)
+	}
+
 	var divider = "-----------------"
-	for m1, m := range list_of_cart {
-		//for k, v := range m {
-		fmt.Println(m1, m)
-		//}
+	for _, m := range response {
+		for k, v := range m {
+			fmt.Println(k, ":", v)
+		}
 		fmt.Println(divider)
 	}
 	fmt.Println("Total Cart Value:", total)

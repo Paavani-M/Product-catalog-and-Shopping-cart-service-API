@@ -96,12 +96,23 @@ func GetCategoryCI() {
 		categories = append(categories, newCategory)
 	}
 
-	var divider = "-----------------"
-	for m1, m := range categories {
-		fmt.Println(m1, m)
-		fmt.Println(divider)
+	response := []map[string]any{}
+
+	for _, v := range categories {
+		newCategory := map[string]any{
+			"Category Id": v.Category_id,
+			"Name":        v.Name,
+		}
+		response = append(response, newCategory)
 	}
 
+	var divider = "-----------------"
+	for _, m := range response {
+		for k, v := range m {
+			fmt.Println(k, ":", v)
+		}
+		fmt.Println(divider)
+	}
 	ContinueC()
 }
 
